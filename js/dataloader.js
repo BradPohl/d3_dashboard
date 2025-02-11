@@ -7,6 +7,9 @@ function loadData(callback){
             major: d["Undergraduate Major"],
             decision: d["Decided to Pursue MBA?"],
             location: d["Online vs. On-Campus MBA"],
+            age: d["Age"],
+            decided_to_pursue: d["Decided to Pursue MBA?"],
+            reason_for_mba: d["Reason for MBA"],
         }));
         console.log("CSV Data loaded:", filteredData);
         callback(filteredData);
