@@ -1,3 +1,5 @@
+
+// Load data from CSV file
 function loadData(callback){
     d3.csv("data/mba_decision_dataset.csv").then(data =>{
         //convert numeric values
