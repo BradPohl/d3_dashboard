@@ -8,12 +8,25 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>D3.js Dashboard</h1>
+    <h1>MBA Decision Dashboard</h1>
     <div class="dashboard">
-        <div id="scatter"></div>
-        <div id="stackedBar"></div>
-        <div id="lineGraph"></div>
-        <div id="pieChart"></div>
+        <div class="draggable" id="scatter-container">
+            <div class="drag-bar">Undergrad GPA Vs. GRE/GMAT Score</div>
+            <div id="scatter"></div>
+        </div>
+        
+        <div class="draggable" id="stackedBar-container">
+            <div class="drag-bar">Which Field takes more online or on-campus programs?</div>
+            <div id="stackedBar"></div>
+        </div>
+        <div class="draggable" id="lineGraph-container">
+            <div class="drag-bar">Does Age impact the decision to get an MBA?</div>
+            <div id="lineGraph"></div>
+        </div>
+        <div class="draggable" id="pieChart-container">
+            <div class="drag-bar">Reasons for getting an MBA</div>
+            <div id="pieChart"></div>
+        </div>
     </div>
     <script src="js/dataloader.js"></script>
     <script src="js/chart1.js"></script>
