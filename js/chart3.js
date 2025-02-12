@@ -1,5 +1,5 @@
 function createLineGraph(data) {
-    const width = 500, height = 500, margin = {top:40, right:30, bottom:100, left:60};
+    const width = 450, height = 400, margin = {top:20, right:60, bottom:100, left:60};
     
     const svg = d3.select("#lineGraph")
     	.append("svg")

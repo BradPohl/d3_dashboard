@@ -1,5 +1,5 @@
 function createStackedBarChart(data) {
-    const width = 600, height = 400, margin = {top:40, right:30, bottom:100, left:60};
+    const width = 500, height = 400, margin = {top:40, right:30, bottom:100, left:60};
 
     console.log("Creating stacked bar chart with data:", data);
 

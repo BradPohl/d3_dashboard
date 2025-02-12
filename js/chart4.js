@@ -1,5 +1,5 @@
 function createPieChart(data) {
-    const width = 950, height = 600, margin = 50; 
+    const width = 650, height = 500, margin = 50; 
     const radius = Math.min(width, height) / 2 - margin;
 
     const svg = d3.select("#pieChart")

@@ -1,6 +1,8 @@
 function createScatterPlot(data) {
     const width = 500, height = 400, margin = {top:20, right:30, bottom:50, left:50};
 
+    console.log("Creating scatter plot with data:", data);
+
 
     const svg = d3.select("#scatter")
         .append("svg")
