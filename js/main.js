@@ -8,42 +8,44 @@ document.addEventListener("DOMContentLoaded", function(){
         createLineGraph(data);
         createPieChart(data);
 
-        // allow dragging
-        makeDraggable();
+        draggable();
     });
 });
 
 /**
- * Make the views draggable. Must select the drag bar to drag the view.
+ * Enable dragging for all charts
  */
-function makeDraggable(){
+function draggable() {
+    document.querySelectorAll(".drag-bar").forEach(bar => {
+        let container = bar.parentNode; // Get the chart container
+        let offsetX, offsetY, isDragging = false;
 
-    d3.selectAll(".drag-bar")
-        .each(function() {
-            const parent = d3.select(this.parentNode);
+        // Mouse down: start dragging
+        bar.addEventListener("mousedown", (event) => {
+            isDragging = true;
+            offsetX = event.clientX - container.offsetLeft;
+            offsetY = event.clientY - container.offsetTop;
+            container.style.position = "absolute"; // Ensure absolute positioning
+            container.style.zIndex = 1000; // Bring to front
 
-            let offsetX, offsetY;
+            event.preventDefault(); // Prevent text selection
+        });
 
-            d3.select(this)
-                .call(d3.drag()
-                    .on("start", function(event){
-                        // Get current position of the draggable container
-                        const rect = parent.node().getBoundingClientRect();
+        // Mouse move: update position
+        document.addEventListener("mousemove", (event) => {
+            if (!isDragging) return;
 
-                        // Store the mouse offset within the container
-                        offsetX = event.x - rect.left;
-                        offsetY = event.y - rect.top;
+            // Use requestAnimationFrame for smoother updates
+            requestAnimationFrame(() => {
+                container.style.left = `${event.clientX - offsetX}px`;
+                container.style.top = `${event.clientY - offsetY}px`;
+            });
+        });
 
-                        parent.raise().classed("active", true);
-                    })
-                    .on("drag", function(event){
-                        parent.style("left", `${event.x - offsetX}px`)
-                            .style("top", `${event.y - offsetY}px`);
-                    })
-                    .on("end", function(event){
-                        parent.classed("active", false);
-                    })
-                );
-        })
-    
+        // Mouse up: stop dragging
+        document.addEventListener("mouseup", () => {
+            isDragging = false;
+            container.style.zIndex = ""; // Reset stacking order
+        });
+    });
 }
