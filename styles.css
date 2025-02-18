@@ -19,11 +19,29 @@ body {
     padding-top: 30px;
 }
 
+.button {
+    position: absolute;
+    right: 10px;
+    top: 45%;
+    transform: translateY(-50%);
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 25px;
+    padding: 0px;
+    color: white;
+}
+
+.button:focus {
+    outline: none;
+}
+
 /* Ensure charts don't stack on top of each other */
 #scatter-container { top: 50px; left: 50px; }
 #stackedBar-container { top: 50px; left: 660px; }
 #lineGraph-container { top: 650px; left: 50px; }
 #pieChart-container { top: 650px; left: 660px; }
+#saveTable-container { top: 50px; left: 1350px; width: 400px; }
 
 .drag-bar {
     width: 100%;
@@ -58,6 +76,12 @@ body {
     height:100%;
 }
 
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
 
-
-
+td {
+    border: 1px solid black;
+    height: 50px;
+}
