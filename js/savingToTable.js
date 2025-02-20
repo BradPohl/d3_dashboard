@@ -5,8 +5,12 @@
 function saveChart(chartName) {
     const existingCharts = Cookies.get('chartNames') ? JSON.parse(Cookies.get('chartNames')) : [];
     existingCharts.push(chartName); // gathers any previous saved charts
-    Cookies.set('chartNames', JSON.stringify(existingCharts), {expires: 1}); // sets cookie with the new saved chart name and it expires after 1 day
+    Cookies.set('chartNames', JSON.stringify(existingCharts), {expires: 1/288}); // sets cookie with the new saved chart name and it expires after 5 mins
+    
+    hideChartContainer(chartName); //hide chart once saved
+    
     updateSavedChartsTable(existingCharts); 
+
     alert('Cookie has been set!'); // throws an alert onto webpage when the cookie has been set successfully
 }
 
@@ -23,7 +27,54 @@ function updateSavedChartsTable() {
         const row = table.insertRow(-1);
         const cell = row.insertCell(0);
         cell.textContent = name;
+        cell.style.cursor = 'pointer';
+        cell.addEventListener('click', function() {  // adding a listener to allow for un-hiding 
+            toggleChartSavedState(name);
+        });
     });
+}
+
+/*
+    This method handles hiding a chart once its been saved
+    It will reterive the containerId and then set the opacity to none
+*/
+function hideChartContainer(chartName) { 
+    let containerId = getChartContainerId(chartName);
+    const chartContainer = document.getElementById(containerId);
+    chartContainer.style.display = 'none';
+}
+
+/*
+    This method handles un-hiding a chart once its been hidden
+    It will get the containerId and un-hide based on opcacity option
+*/
+function toggleChartSavedState(chartName) {
+    let containerId = getChartContainerId(chartName);
+    const chartContainer = document.getElementById(containerId);
+    if (chartContainer.style.display === 'none') {
+        chartContainer.style.display = ''; // Un-hide the container
+        chartContainer.style.opacity = 1; // Reset opacity
+    } else {
+        chartContainer.style.display = 'none'; // Hide the container
+    }
+}
+
+/*
+    This method handles reteriving the correct container for the corresponding chart name
+*/
+function getChartContainerId(chartName) {
+    switch(chartName) {
+        case "Undergrad GPA Vs. GRE/GMAT Score":
+            return "scatter-container";
+        case "Which Field takes more online or on-campus programs?":
+            return "stackedBar-container";
+        case "Does Age impact the decision to get an MBA?":
+            return "lineGraph-container";
+        case "Reasons for getting an MBA":
+            return "pieChart-container";
+        default:
+            return "";
+    }
 }
 
 /*
