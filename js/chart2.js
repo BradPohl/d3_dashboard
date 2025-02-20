@@ -1,5 +1,5 @@
 function createStackedBarChart(data) {
-    const width = 500, height = 400, margin = {top:40, right:30, bottom:100, left:60};
+    const width = 500, height = 350, margin = {top:60, right:30, bottom:100, left:60};
 
     console.log("Creating stacked bar chart with data:", data);
 
@@ -77,19 +77,33 @@ function createStackedBarChart(data) {
     
     //legend
     const legend = svg.append("g")
-        .attr("transform", `translate(${width-100}, -30)`);
+        .attr("transform", `translate(${width-100}, -50)`);
 
     legend.append("rect")
         .attr("x", 0)
         .attr("y", 0)
         .attr("width", 20)
         .attr("height",20)
-        .attr("fill", color("online"));
+        .attr("fill", color("onCampus"));
 
     legend.append("text")
         .attr("x", 30)
         .attr("y", 15)
         .text("On-Campus")
+        .attr("font-size", "12px")
+        .attr("fill", "black");
+
+    legend.append("rect")
+        .attr("x", 0)
+        .attr("y", 22)
+        .attr("width", 20)
+        .attr("height",20)
+        .attr("fill", color("online"));
+
+    legend.append("text")
+        .attr("x", 30)
+        .attr("y", 37)
+        .text("Online")
         .attr("font-size", "12px")
         .attr("fill", "black");
 }
