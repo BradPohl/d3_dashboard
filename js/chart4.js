@@ -30,10 +30,10 @@ function createPieChart(data) {
 
     // Helps position labels
     const arcLabel = d3.arc()
-        .innerRadius(radius * 0.3) 
+        .innerRadius(radius * 0.25) 
         .outerRadius(radius);
 
-    svg.selectAll('path')
+    const slices = svg.selectAll('path')
         .data(data_ready)
         .enter()
         .append('path')
@@ -42,6 +42,18 @@ function createPieChart(data) {
         .attr("stroke", "white")
         .style("stroke-width", "2px")
         .style("opacity", 0.7);
+
+    // Adding mouse hover for highlighting a certain slice
+    slices.on("mouseover", function(event, d) {
+        svg.selectAll('path')
+            .style("opacity", 0.2); // Dim all slices
+        d3.select(this)
+            .style("opacity", 1); // Highlight the hovered slice
+    })
+    .on("mouseout", function() {
+        svg.selectAll('path')
+            .style("opacity", 0.7); // Reset opacity for all slices
+    });
 
     // labels
     svg.selectAll('text')
@@ -53,5 +65,3 @@ function createPieChart(data) {
         .style("text-anchor", "middle")
         .style("font-size", 14);
 }
-
-
