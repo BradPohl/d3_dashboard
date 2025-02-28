@@ -136,3 +136,109 @@ function resetVisualizations() {
         createPieChart(data);
     });
 }
+
+
+function filterVisualizationsFromScatter(selectedData) {
+    d3.select("#pieChart").selectAll('path').style("opacity", 0.7);
+
+    loadData(function(filteredData) {
+        // Create a Set of selected IDs for fast lookup
+        const selectedIds = new Set(selectedData.map(d => d.id));
+        
+        // Filter the data based on the selected points
+        const filtered = filteredData.filter(d => selectedIds.has(d.id));
+
+        if (filtered.length === 0) return; // Avoid unnecessary updates if nothing is selected
+
+        // Clear and update each visualization
+        d3.select("#stackedBar").selectAll("*").remove();
+        createStackedBarChart(filtered);
+
+        d3.select("#lineGraph").selectAll("*").remove();
+        createLineGraph(filtered);
+
+        d3.select("#pieChart").selectAll("*").remove();
+        createPieChart(filtered);
+    });
+}
+
+
+
+function drawLinks(selectedData) {
+    d3.selectAll(".link-line").remove(); // Remove previous lines
+
+    selectedData.forEach(d => {
+        // Find corresponding elements in other visualizations
+        const scatterPoint = d3.select("#scatter svg")
+            .selectAll("circle")
+            .filter(dd => dd.id === d.id)
+            .node();
+
+        const barElement = d3.select("#stackedBar svg")
+            .selectAll("rect")
+            .filter(dd => dd.major === d.major)
+            .node();
+
+        const pieElement = d3.select("#pieChart svg")
+            .selectAll("path")
+            .filter(dd => dd.data[0] === d.reason_for_mba)
+            .node();
+
+        const lineElement = d3.select("#lineGraph svg")
+            .selectAll("circle")  // Assuming the line graph has circles representing points
+            .filter(dd => dd.age === d.age)
+            .node();
+
+        if (scatterPoint && barElement) {
+            createLinkLine(scatterPoint, barElement);
+        }
+
+        if (scatterPoint && pieElement) {
+            createLinkLine(scatterPoint, pieElement);
+        }
+
+        if (scatterPoint && lineElement) {
+            createLinkLine(scatterPoint, lineElement);
+        }
+    });
+}
+
+
+
+function createLinkLine(element1, element2) {
+    const body = d3.select("body");
+
+    // Ensure only one SVG is used for all lines
+    let svg = d3.select("#link-layer");
+
+    if (svg.empty()) {
+        svg = body.append("svg")
+            .attr("id", "link-layer")
+            .style("position", "absolute")
+            .style("top", "0px")
+            .style("left", "0px")
+            .attr("width", window.innerWidth)
+            .attr("height", window.innerHeight)
+            .style("pointer-events", "none");
+    }
+
+    const pos1 = element1.getBoundingClientRect();
+    const pos2 = element2.getBoundingClientRect();
+
+    const lineX1 = pos1.left + pos1.width / 2 + window.scrollX;
+    const lineY1 = pos1.top + pos1.height / 2 + window.scrollY;
+    const lineX2 = pos2.left + pos2.width / 2 + window.scrollX;
+    const lineY2 = pos2.top + pos2.height / 2 + window.scrollY;
+
+    svg.append("line")
+        .attr("class", "link-line")
+        .attr("x1", lineX1)
+        .attr("y1", lineY1)
+        .attr("x2", lineX2)
+        .attr("y2", lineY2)
+        .attr("stroke", "black")
+        .attr("stroke-width", 2)
+        .attr("opacity", 0.8);
+}
+
+
