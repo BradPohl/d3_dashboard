@@ -4,6 +4,7 @@ function loadData(callback){
     d3.csv("data/mba_decision_dataset.csv").then(data =>{
         //convert numeric values
         let filteredData = data.map(d => ({
+            id: +d["Person ID"],
             gpa: +d["Undergraduate GPA"],
             gre_gmat: +d["GRE/GMAT Score"],
             major: d["Undergraduate Major"],
