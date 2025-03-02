@@ -16,19 +16,51 @@ document.addEventListener("DOMContentLoaded", function(){
 /**
  * Enable dragging for all charts
  */
+// function draggable() {
+//     document.querySelectorAll(".drag-bar").forEach(bar => {
+//         let container = bar.parentNode; 
+//         let offsetX, offsetY, isDragging = false;
+
+//         bar.addEventListener("mousedown", (event) => {
+//             isDragging = true;
+//             offsetX = event.clientX - container.offsetLeft;
+//             offsetY = event.clientY - container.offsetTop;
+//             container.style.position = "absolute"; 
+//             container.style.zIndex = 1000; 
+
+//             event.preventDefault(); 
+//         });
+
+//         document.addEventListener("mousemove", (event) => {
+//             if (!isDragging) return;
+
+//             requestAnimationFrame(() => {
+//                 container.style.left = `${event.clientX - offsetX}px`;
+//                 container.style.top = `${event.clientY - offsetY}px`;
+//             });
+//         });
+
+//         document.addEventListener("mouseup", () => {
+//             isDragging = false;
+//             container.style.zIndex = "";
+//         });
+//     });
+// }
+
+
 function draggable() {
     document.querySelectorAll(".drag-bar").forEach(bar => {
-        let container = bar.parentNode; 
+        let container = bar.parentNode;
         let offsetX, offsetY, isDragging = false;
 
         bar.addEventListener("mousedown", (event) => {
             isDragging = true;
             offsetX = event.clientX - container.offsetLeft;
             offsetY = event.clientY - container.offsetTop;
-            container.style.position = "absolute"; 
-            container.style.zIndex = 1000; 
+            container.style.position = "absolute";
+            container.style.zIndex = 1000;
 
-            event.preventDefault(); 
+            event.preventDefault();
         });
 
         document.addEventListener("mousemove", (event) => {
@@ -41,11 +73,20 @@ function draggable() {
         });
 
         document.addEventListener("mouseup", () => {
-            isDragging = false;
-            container.style.zIndex = "";
+            if (isDragging) {
+                isDragging = false;
+                container.style.zIndex = "";
+
+                // **Regenerate Links on Move**
+                setTimeout(() => {
+                    d3.selectAll(".link-line").remove(); // Clear old lines
+                    activeLinks.forEach(link => createLinkLine(link.from, link.to, "red"));
+                }, 100);
+            }
         });
     });
 }
+
 
 /**
  * Function to reset all charts and remove any filtering
@@ -94,9 +135,59 @@ function filterVisualizationsFromScatter(selectedData) {
 
 
 
-// Finally working version of drawLinks function
+// // Finally working version of drawLinks function
+// function drawLinks(selectedData) {
+//     d3.selectAll(".link-line").remove(); // Remove previous lines
+
+//     selectedData.forEach(d => {
+//         const scatterPoint = d3.select("#scatter svg")
+//             .selectAll("circle")
+//             .filter(dd => dd.id === d.id)
+//             .node();
+
+//         const barElement = d3.select("#stackedBar svg")
+//             .selectAll("rect")
+//             .filter(dd => dd?.data?.major === d.major)
+//             .node();
+
+//         const pieElement = d3.select("#pieChart svg")
+//             .selectAll("path")
+//             .filter(dd => dd.data[0] === d.reason_for_mba)
+//             .node();
+
+//         const lineElement = d3.select("#lineGraph svg")
+//             .selectAll("circle")  // If circles exist in line graph
+//             .filter(dd => dd.age === d.age)
+//             .node();
+
+//         // Debugging
+//         console.log(`Checking connections for ID: ${d.id}`);
+//         console.log("ScatterPoint:", scatterPoint);
+//         console.log("BarElement:", barElement);
+//         console.log("PieElement:", pieElement);
+//         console.log("LineElement:", lineElement);
+
+//         if (scatterPoint && barElement) {
+//             console.log("Drawing line to bar chart...");
+//             createLinkLine(scatterPoint, barElement, "red");
+//         }
+
+//         if (scatterPoint && pieElement) {
+//             console.log("Drawing line to pie chart...");
+//             createLinkLine(scatterPoint, pieElement, "red");
+//         }
+
+//         if (scatterPoint && lineElement) {
+//             console.log("Drawing line to line graph...");
+//             createLinkLine(scatterPoint, lineElement, "red");
+//         }
+//     });
+// }
+
+let activeLinks = []; // Stores the connections
+
 function drawLinks(selectedData) {
-    d3.selectAll(".link-line").remove(); // Remove previous lines
+    d3.selectAll(".link-line").remove(); // Remove old links
 
     selectedData.forEach(d => {
         const scatterPoint = d3.select("#scatter svg")
@@ -119,29 +210,21 @@ function drawLinks(selectedData) {
             .filter(dd => dd.age === d.age)
             .node();
 
-        // Debugging
-        console.log(`Checking connections for ID: ${d.id}`);
-        console.log("ScatterPoint:", scatterPoint);
-        console.log("BarElement:", barElement);
-        console.log("PieElement:", pieElement);
-        console.log("LineElement:", lineElement);
-
         if (scatterPoint && barElement) {
-            console.log("Drawing line to bar chart...");
             createLinkLine(scatterPoint, barElement, "red");
+            activeLinks.push({ from: scatterPoint, to: barElement });
         }
-
         if (scatterPoint && pieElement) {
-            console.log("Drawing line to pie chart...");
             createLinkLine(scatterPoint, pieElement, "red");
+            activeLinks.push({ from: scatterPoint, to: pieElement });
         }
-
         if (scatterPoint && lineElement) {
-            console.log("Drawing line to line graph...");
             createLinkLine(scatterPoint, lineElement, "red");
+            activeLinks.push({ from: scatterPoint, to: lineElement });
         }
     });
 }
+
 
 
 
@@ -175,10 +258,45 @@ function createLinkLine(element1, element2, color) {
         .attr("y1", lineY1)
         .attr("x2", lineX2)
         .attr("y2", lineY2)
+        .attr("stroke-dasharray", "5,5")
+        .attr("stroke-linecap", "round")
         .attr("stroke", color)
         .attr("stroke-width", 2)
-        .attr("opacity", 0.8);
+        .attr("opacity", 0.8)
+        .style("pointer-events", "stroke")
+        .on("mouseover", function () {
+            d3.select(this)
+                .attr("stroke-width", 6) // Thicker line on hover
+                .attr("opacity", 1)
+                .raise(); // Bring to front
+
+            // Find connected points and highlight them
+            d3.selectAll("circle")
+                .filter(d => d3.select(element1).data()[0] === d || d3.select(element2).data()[0] === d)
+                .raise()
+                .attr("stroke", "black")
+                .attr("stroke-width", 3)
+                .attr("r", 8); // Make larger
+
+                
+        })
+        .on("mouseout", function () {
+            d3.select(this)
+                .attr("stroke-width", 3) // Reset width
+                .attr("opacity", 0.8);
+
+            // Reset connected points
+            d3.selectAll("circle")
+                .filter(d => d3.select(element1).data()[0] === d || d3.select(element2).data()[0] === d)
+                .attr("stroke", "none")
+                .attr("r", 5); // Reset size
+        });
+
+        
 }
+
+
+
 
 
 

@@ -172,8 +172,8 @@ function createPieChart(data) {
         }
 
         let menuHtml = `
-            <button id="add-link">Apply Linking</button>
-            ${isLinked ? '<button id="remove-link">Remove Linking</button>' : ''}
+            <button id="add-link">Apply Filtering</button>
+            ${isLinked ? '<button id="remove-link">Remove Filtering</button>' : ''}
             <div id="chart-selection">
                 <label><input type="checkbox" id="scatter-check" ${linkedCharts.scatter ? "checked" : ""}> Scatter Plot</label><br>
                 <label><input type="checkbox" id="stackedBar-check" ${linkedCharts.stackedBar ? "checked" : ""}> Stacked Bar Chart</label><br>
