@@ -2,6 +2,9 @@
 
 console.log("main.js")
 
+/*
+    This is an eventListener method, it handles call's all the view methods to get created and invokes dragging
+*/
 document.addEventListener("DOMContentLoaded", function(){
     loadData(function(data){
         createScatterPlot(data);
@@ -79,7 +82,9 @@ function resetVisualizations(linkedCharts) {
     });
 }
 
-
+/**
+ * Function to filter the views when we select from scatter plot
+ */
 
 function filterVisualizationsFromScatter(selectedData, linkedCharts) {
     loadData(function(filteredData) {
@@ -112,7 +117,10 @@ function filterVisualizationsFromScatter(selectedData, linkedCharts) {
 
 let activeLinks = []; // Stores the connections
 
-
+/*
+    This method handles the ploting of links via filters
+    It will get the get the filters and call createLinkLine() to show lines based on the filters set
+*/
 function drawLinks(selectedData, linkedCharts) {
     d3.selectAll(".link-line").remove(); // Remove old links
 
@@ -122,6 +130,7 @@ function drawLinks(selectedData, linkedCharts) {
             .filter(dd => dd.id === d.id)
             .node();
 
+            //Checks for link to bar chart then implements lines if yes
         if (linkedCharts.stackedBar) {
             const barElement = d3.select("#stackedBar svg")
                 .selectAll("rect")
@@ -132,7 +141,7 @@ function drawLinks(selectedData, linkedCharts) {
                 activeLinks.push({ from: scatterPoint, to: barElement });
             }
         }
-
+            //Checks for link to pie chart then implements lines if yes
         if (linkedCharts.pieChart) {
             const pieElement = d3.select("#pieChart svg")
                 .selectAll("path")
@@ -143,7 +152,7 @@ function drawLinks(selectedData, linkedCharts) {
                 activeLinks.push({ from: scatterPoint, to: pieElement });
             }
         }
-
+            //Checks for link to line graph then implements filtering if yes
         if (linkedCharts.lineGraph) {
             const lineElement = d3.select("#lineGraph svg")
                 .selectAll("circle")
@@ -160,7 +169,10 @@ function drawLinks(selectedData, linkedCharts) {
 
 
 
-
+/*
+    This method handles the drawing of links
+    It takes in three aruguments and implements lines between the the views as needed. 
+*/
 
 function createLinkLine(element1, element2, color) {
     const body = d3.select("body");

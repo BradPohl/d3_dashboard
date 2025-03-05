@@ -107,7 +107,7 @@ function createScatterPlot(data) {
     });
  
         
-
+    // This method handles showing a context menu with the options to add/remove linking
     function showContextMenu(x, y) {
         let menu = d3.select("#context-menu");
     
@@ -121,7 +121,7 @@ function createScatterPlot(data) {
                 .style("display", "none")
                 .style("z-index", "1000");
         }
-    
+        // Invokes the buttons to show
         let menuHtml = `
             <button id="add-link">Apply Linking</button>
             <button id="remove-link">Remove Linking</button>
@@ -144,15 +144,15 @@ function createScatterPlot(data) {
         d3.select("#lineGraph-check").on("change", function() { linkedCharts.lineGraph = this.checked; });
         d3.select("#pieChart-check").on("change", function() { linkedCharts.pieChart = this.checked; });
     
-        d3.select("#add-link").on("click", function() {
+        d3.select("#add-link").on("click", function() { // Adds links  via the selected plot points
             menu.style("display", "none");
             if (selectedData.length > 0) {
                 filterVisualizationsFromScatter(selectedData, linkedCharts);
-                setTimeout(() => drawLinks(selectedData, linkedCharts), 500);
+                setTimeout(() => drawLinks(selectedData, linkedCharts), 500);    // Ensures the charts update first
             }
         });
     
-        d3.select("#remove-link").on("click", function() {
+        d3.select("#remove-link").on("click", function() {  // if needed remove any current links
             menu.style("display", "none");
             resetVisualizations(linkedCharts); // Only reset selected charts
             d3.selectAll(".link-line").remove(); // Remove only visual links
