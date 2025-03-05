@@ -1,5 +1,3 @@
-
-
 console.log("main.js")
 
 /*
@@ -111,10 +109,6 @@ function filterVisualizationsFromScatter(selectedData, linkedCharts) {
 }
 
 
-
-
-
-
 let activeLinks = []; // Stores the connections
 
 /*
@@ -167,13 +161,10 @@ function drawLinks(selectedData, linkedCharts) {
 }
 
 
-
-
 /*
     This method handles the drawing of links
     It takes in three aruguments and implements lines between the the views as needed. 
 */
-
 function createLinkLine(element1, element2, color) {
     const body = d3.select("body");
 
@@ -197,7 +188,7 @@ function createLinkLine(element1, element2, color) {
     const lineX2 = pos2.left + pos2.width / 2 + window.scrollX;
     const lineY2 = pos2.top + pos2.height / 2 + window.scrollY;
 
-    svg.append("line")
+    const line = svg.append("line")
         .attr("class", "link-line")
         .attr("x1", lineX1)
         .attr("y1", lineY1)
@@ -209,39 +200,50 @@ function createLinkLine(element1, element2, color) {
         .attr("stroke-width", 2)
         .attr("opacity", 0.8)
         .style("pointer-events", "stroke")
-        .on("mouseover", function () {
+        .on("click", function() {
             d3.select(this)
-                .attr("stroke-width", 6) // Thicker line on hover
-                .attr("opacity", 1)
-                .raise(); // Bring to front
-
-            // Find connected points and highlight them
-            d3.selectAll("circle")
-                .filter(d => d3.select(element1).data()[0] === d || d3.select(element2).data()[0] === d)
-                .raise()
-                .attr("stroke", "black")
-                .attr("stroke-width", 3)
-                .attr("r", 8); // Make larger
-
-                
+            .attr("stroke", "grey")
+            .attr("stroke-width", 7)
+            .classed("inactive-link", true);
+        })
+        .on("mouseover", function () {
+            if (d3.select(this).classed("inactive-link")) {
+                const circleData = d3.select(element1).data()[0]; 
+                const element2Data = d3.select(element2).data()[0]; 
+        
+                let tooltipHtml = `Link Information:<br>GPA: ${circleData.gpa}<br>GRE/GMAT: ${circleData.gre_gmat}<br>Major: ${circleData.major}`;
+        
+                // Check if element2 is a rectangle with major data or a path with pie chart data
+                if (element2Data.data && element2Data.data.major) {
+                    // This is rect data
+                    if (element2Data.data.online === 1) {
+                        tooltipHtml += `<br>Online`;
+                    }
+                    if (element2Data.data.onCampus === 1) {
+                        tooltipHtml += `<br>On-Campus`;
+                    }
+                } else if (element2Data.data && Array.isArray(element2Data.data)) {
+                    // This is path data from a pie chart
+                    const category = element2Data.data[0];  
+                    const count = element2Data.data[1];     
+                    tooltipHtml += `<br>${category}`;
+                }
+        
+                const tooltip = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("position", "absolute")
+                    .style("background", "white")
+                    .style("border", "1px solid black")
+                    .style("padding", "10px")
+                    .style("font-size", "16px")
+                    .html(tooltipHtml)
+                    .style("left", `${d3.event.pageX + 10}px`)
+                    .style("top", `${d3.event.pageY - 10}px`);
+            }
         })
         .on("mouseout", function () {
-            d3.select(this)
-                .attr("stroke-width", 3) // Reset width
-                .attr("opacity", 0.8);
-
-            // Reset connected points
-            d3.selectAll("circle")
-                .filter(d => d3.select(element1).data()[0] === d || d3.select(element2).data()[0] === d)
-                .attr("stroke", "none")
-                .attr("r", 5); // Reset size
-        });
-
-        
+            d3.select(".tooltip").remove(); // Ensure tooltip is removed when mouse leaves
+        });        
+    return line;
 }
-
-
-
-
-
 
