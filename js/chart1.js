@@ -105,6 +105,8 @@ function createScatterPlot(data) {
             showContextMenu(event.pageX, event.pageY);
         }
     });
+ 
+        
 
     function showContextMenu(x, y) {
         let menu = d3.select("#context-menu");
@@ -117,37 +119,51 @@ function createScatterPlot(data) {
                 .style("border", "1px solid black")
                 .style("padding", "5px")
                 .style("display", "none")
-                .style("z-index", "1000"); // Ensure it is above other elements
+                .style("z-index", "1000");
         }
     
-        menu.html(`
+        let menuHtml = `
             <button id="add-link">Apply Linking</button>
             <button id="remove-link">Remove Linking</button>
-        `)
-        .style("left", `${x}px`)
-        .style("top", `${y}px`)
-        .style("display", "block");
+            <div id="chart-selection">
+                <label><input type="checkbox" id="stackedBar-check" checked> Stacked Bar Chart</label><br>
+                <label><input type="checkbox" id="lineGraph-check" checked> Line Graph</label><br>
+                <label><input type="checkbox" id="pieChart-check" checked> Pie Chart</label>
+            </div>
+        `;
+    
+        menu.html(menuHtml)
+            .style("left", `${x}px`)
+            .style("top", `${y}px`)
+            .style("display", "block")
+            .style("z-index", "1010");
+    
+        let linkedCharts = { stackedBar: true, lineGraph: true, pieChart: true };
+    
+        d3.select("#stackedBar-check").on("change", function() { linkedCharts.stackedBar = this.checked; });
+        d3.select("#lineGraph-check").on("change", function() { linkedCharts.lineGraph = this.checked; });
+        d3.select("#pieChart-check").on("change", function() { linkedCharts.pieChart = this.checked; });
     
         d3.select("#add-link").on("click", function() {
             menu.style("display", "none");
-    
             if (selectedData.length > 0) {
-                filterVisualizationsFromScatter(selectedData);
-                setTimeout(() => drawLinks(selectedData), 500);  // 🔹 Ensures the charts update first
+                filterVisualizationsFromScatter(selectedData, linkedCharts);
+                setTimeout(() => drawLinks(selectedData, linkedCharts), 500);
             }
         });
     
         d3.select("#remove-link").on("click", function() {
             menu.style("display", "none");
-            resetVisualizations();
-            d3.selectAll(".link-line").remove();
+            resetVisualizations(linkedCharts); // Only reset selected charts
+            d3.selectAll(".link-line").remove(); // Remove only visual links
         });
+        
     
         d3.select("body").on("click", function(event) {
             if (!menu.node().contains(event.target)) {
                 menu.style("display", "none");
             }
         });
-    }    
-        
+    }
+    
 }
