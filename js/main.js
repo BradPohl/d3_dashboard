@@ -1,4 +1,5 @@
 console.log("main.js")
+let groups = []; // Store created groups
 
 /*
     This is an eventListener method, it handles call's all the view methods to get created and invokes dragging
@@ -247,3 +248,48 @@ function createLinkLine(element1, element2, color) {
     return line;
 }
 
+
+
+
+function updateGroupsTable() {
+    const table = document.getElementById("groupsTable");
+    table.innerHTML = "<tr><th>Group Name</th><th>Members</th></tr>";
+
+    groups.forEach(group => {
+        const row = table.insertRow();
+        row.insertCell(0).textContent = group.name;
+        row.insertCell(1).textContent = group.members.length + " members";
+    });
+}
+
+// Update table when a new group is created
+function createGroup(selectedData) {
+    if (selectedData.length === 0) {
+        alert("No points selected to create a group.");
+        return;
+    }
+
+    let groupName = prompt("Enter a name for this group:");
+
+    if (!groupName) return;
+
+    let group = {
+        name: groupName,
+        members: selectedData.map(d => d.id)
+    };
+
+    groups.push(group);
+    localStorage.setItem("groups", JSON.stringify(groups));
+
+    alert(`Group "${groupName}" created with ${selectedData.length} members.`);
+    updateGroupsTable(); // Refresh table
+}
+
+// Load groups on page load
+document.addEventListener("DOMContentLoaded", function() {
+    let savedGroups = localStorage.getItem("groups");
+    if (savedGroups) {
+        groups = JSON.parse(savedGroups);
+        updateGroupsTable();
+    }
+});
