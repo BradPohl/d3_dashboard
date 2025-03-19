@@ -125,6 +125,7 @@ function createScatterPlot(data) {
         let menuHtml = `
             <button id="add-link">Apply Linking</button>
             <button id="remove-link">Remove Linking</button>
+            <button id="create-group">Create Group</button>
             <div id="chart-selection">
                 <label><input type="checkbox" id="stackedBar-check" checked> Stacked Bar Chart</label><br>
                 <label><input type="checkbox" id="lineGraph-check" checked> Line Graph</label><br>
@@ -157,6 +158,12 @@ function createScatterPlot(data) {
             resetVisualizations(linkedCharts); // Only reset selected charts
             d3.selectAll(".link-line").remove(); // Remove only visual links
         });
+
+        // Handle the "Create Group" button
+        d3.select("#create-group").on("click", function() {
+            menu.style("display", "none");
+            createGroup(selectedData);
+        });
         
     
         d3.select("body").on("click", function(event) {
@@ -165,5 +172,38 @@ function createScatterPlot(data) {
             }
         });
     }
+
+
+    // let groups = []; // Store created groups
+
+    // function createGroup(selectedData) {
+    //     if (selectedData.length === 0) {
+    //         alert("No points selected to create a group.");
+    //         return;
+    //     }
+
+    //     let groupName = prompt("Enter a name for this group:");
+
+    //     if (!groupName) return;
+
+    //     let group = {
+    //         name: groupName,
+    //         members: selectedData.map(d => d.id) // Store only IDs to minimize data duplication
+    //     };
+
+    //     groups.push(group);
+
+    //     alert(`Group "${groupName}" created with ${selectedData.length} members.`);
+    //     console.log("Current Groups:", groups);
+    // }
+
+    // // Load saved groups when page loads
+    // document.addEventListener("DOMContentLoaded", function() {
+    //     let savedGroups = localStorage.getItem("groups");
+    //     if (savedGroups) {
+    //         groups = JSON.parse(savedGroups);
+    //         console.log("Loaded Groups:", groups);
+    //     }
+    // });
     
 }
