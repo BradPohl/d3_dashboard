@@ -260,6 +260,17 @@ function updateGroupsTable() {
         row.insertCell(0).textContent = group.name;
         row.insertCell(1).textContent = group.members.length + " members";
     });
+
+    if (groups.length > 0) {
+        let clearRow = table.insertRow();
+        let cell = clearRow.insertCell(0);
+        cell.colSpan = 2;
+        cell.innerHTML = `<button id="clear-groups-btn">Reset Groups</button>`;
+        cell.style.textAlign = "center";
+
+        // ✅ Add event listener to clear groups
+        document.getElementById("clear-groups-btn").addEventListener("click", clearGroups);
+    }
 }
 
 // Update table when a new group is created
@@ -293,3 +304,14 @@ document.addEventListener("DOMContentLoaded", function() {
         updateGroupsTable();
     }
 });
+
+
+function clearGroups() {
+    if (!confirm("Are you sure you want to clear all saved groups?")) return;
+
+    groups = []; // ✅ Reset the groups array
+    localStorage.removeItem("groups"); // ✅ Remove saved groups from local storage
+
+    updateGroupsTable(); // ✅ Refresh the table
+}
+
