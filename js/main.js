@@ -255,10 +255,32 @@ function updateGroupsTable() {
     const table = document.getElementById("groupsTable");
     table.innerHTML = "<tr><th>Group Name</th><th>Members</th></tr>";
 
-    groups.forEach(group => {
+    groups.forEach((group, index) => {
         const row = table.insertRow();
+        row.dataset.groupIndex = index;
+        row.style.cursor = "pointer";
+        
         row.insertCell(0).textContent = group.name;
         row.insertCell(1).textContent = group.members.length + " members";
+
+        // Add click handler for row selection
+        row.addEventListener("click", function(e) {
+            // Don't trigger selection if clicking on action buttons
+            if (e.target.tagName === "BUTTON") return;
+            
+            // Toggle selection
+            const wasSelected = this.classList.contains("selected");
+            
+            // Remove selection from all rows
+            table.querySelectorAll("tr").forEach(r => r.classList.remove("selected"));
+            
+            if (!wasSelected) {
+                this.classList.add("selected");
+                showGroupActions(group, index);
+            } else {
+                hideGroupActions();
+            }
+        });
     });
 
     if (groups.length > 0) {
@@ -268,9 +290,74 @@ function updateGroupsTable() {
         cell.innerHTML = `<button id="clear-groups-btn">Reset Groups</button>`;
         cell.style.textAlign = "center";
 
-        // ✅ Add event listener to clear groups
         document.getElementById("clear-groups-btn").addEventListener("click", clearGroups);
     }
+
+    // Add group actions container
+    let actionsContainer = document.querySelector(".group-actions");
+    if (!actionsContainer) {
+        actionsContainer = document.createElement("div");
+        actionsContainer.className = "group-actions";
+        table.parentNode.appendChild(actionsContainer);
+    }
+}
+
+function showGroupActions(group, index) {
+    const actionsContainer = document.querySelector(".group-actions");
+    actionsContainer.innerHTML = `
+        <button class="visualize-btn">Visualize Partite</button>
+        <button class="delete-btn delete">Delete Group</button>
+    `;
+    actionsContainer.style.display = "block";
+
+    // Add event listeners for action buttons
+    actionsContainer.querySelector(".visualize-btn").addEventListener("click", () => {
+        showPartiteWindow(group);
+    });
+
+    actionsContainer.querySelector(".delete-btn").addEventListener("click", () => {
+        deleteGroup(index);
+    });
+}
+
+function showPartiteWindow(group) {
+    const partiteContainer = document.getElementById("partite-container");
+    partiteContainer.style.display = "block";
+    
+    // Position the window in the center of the screen
+    partiteContainer.style.left = `${(window.innerWidth - 500) / 2}px`;
+    partiteContainer.style.top = `${(window.innerHeight - 750) / 2}px`;
+    
+    // Add close button functionality
+    const closeBtn = document.getElementById("closePartiteBtn");
+    closeBtn.onclick = () => {
+        partiteContainer.style.display = "none";
+    };
+    
+    // Make the window draggable
+    draggable();
+
+    // Load the data for the selected group members
+    loadData(function(data) {
+        const groupData = data.filter(d => group.members.includes(d.id));
+        createPartiteVisualization(groupData, "partiteVisualization");
+    });
+}
+
+function hideGroupActions() {
+    const actionsContainer = document.querySelector(".group-actions");
+    if (actionsContainer) {
+        actionsContainer.style.display = "none";
+    }
+}
+
+function deleteGroup(index) {
+    if (!confirm("Are you sure you want to delete this group?")) return;
+    
+    groups.splice(index, 1);
+    localStorage.setItem("groups", JSON.stringify(groups));
+    updateGroupsTable();
+    hideGroupActions();
 }
 
 // Update table when a new group is created

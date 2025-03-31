@@ -118,18 +118,24 @@ function createPieChart(data) {
         .range(d3.schemeCategory10);
 
     const pie = d3.pie()
-        .value(d => d[1])
+        .value(d => d[1].count)
         .sort(null);
 
-    const counts = d3.rollups(data, v => v.length, d => d.reason_for_mba);
+    const counts = d3.rollups(data, 
+        v => ({
+            count: v.length,
+            people: v
+        }), 
+        d => d.reason_for_mba
+    );
     const data_ready = pie(Object.entries(Object.fromEntries(counts)));
 
     const arc = d3.arc().innerRadius(0).outerRadius(radius);
     const arcLabel = d3.arc().innerRadius(radius * 0.25).outerRadius(radius);
 
-    let selectedCategory = null; 
+    let selectedSlices = [];
     let isLinked = false; 
-    let linkedCharts = { scatter: true, stackedBar: true, lineGraph: true }; // Track selected visualizations
+    let linkedCharts = { scatter: true, stackedBar: true, lineGraph: true };
 
     const slices = svg.selectAll('path')
         .data(data_ready)
@@ -141,20 +147,18 @@ function createPieChart(data) {
         .style("stroke-width", "2px")
         .style("opacity", 0.7)
         .on("click", function(event, d) {
-            const currentOpacity = d3.select(this).style("opacity");
-
-            svg.selectAll('path').style("opacity", 0.7);
-
-            if (currentOpacity !== "1") {
-                d3.select(this).style("opacity", 1);
-                selectedCategory = d.data[0]; 
+            const isSelected = selectedSlices.includes(d);
+            if (isSelected) {
+                selectedSlices = selectedSlices.filter(slice => slice !== d);
+                d3.select(this).attr("stroke", "white");
             } else {
-                selectedCategory = null;
+                selectedSlices.push(d);
+                d3.select(this).attr("stroke", "black").attr("stroke-width", 3);
             }
         })
         .on("contextmenu", function(event, d) {
-            event.preventDefault(); 
-            if (selectedCategory) {
+            event.preventDefault();
+            if (selectedSlices.length > 0) {
                 showContextMenu(event.pageX, event.pageY);
             }
         });
@@ -168,12 +172,14 @@ function createPieChart(data) {
                 .style("background", "white")
                 .style("border", "1px solid black")
                 .style("padding", "5px")
-                .style("display", "none");
+                .style("display", "none")
+                .style("z-index", "1000");
         }
 
         let menuHtml = `
             <button id="add-link">Apply Filtering</button>
             ${isLinked ? '<button id="remove-link">Remove Filtering</button>' : ''}
+            <button id="create-group">Create Group</button>
             <div id="chart-selection">
                 <label><input type="checkbox" id="scatter-check" ${linkedCharts.scatter ? "checked" : ""}> Scatter Plot</label><br>
                 <label><input type="checkbox" id="stackedBar-check" ${linkedCharts.stackedBar ? "checked" : ""}> Stacked Bar Chart</label><br>
@@ -187,7 +193,7 @@ function createPieChart(data) {
             .style("display", "block");
 
         d3.select("#chart-selection").on("click", function(event) {
-            event.stopPropagation(); // Prevent closing menu when clicking checkboxes
+            event.stopPropagation();
         });
 
         d3.select("#scatter-check").on("change", function() { linkedCharts.scatter = this.checked; });
@@ -197,7 +203,7 @@ function createPieChart(data) {
         d3.select("#add-link").on("click", function() {
             menu.style("display", "none");
             isLinked = true;
-            filterVisualizations(selectedCategory, linkedCharts);
+            filterVisualizations(selectedSlices[0].data[0], linkedCharts);
         });
 
         d3.select("#remove-link")?.on("click", function() {
@@ -206,7 +212,17 @@ function createPieChart(data) {
             resetVisualizations();
         });
 
-        // Close menu when clicking outside (except checkboxes)
+        d3.select("#create-group").on("click", function() {
+            menu.style("display", "none");
+            if (selectedSlices.length === 0) {
+                alert("No slices selected to create a group.");
+                return;
+            }
+
+            const selectedPeople = selectedSlices.flatMap(d => d.data[1].people.map(p => p.id));
+            createGroup(selectedPeople);
+        });
+
         d3.select("body").on("click", function(event) {
             if (!menu.node().contains(event.target)) {
                 menu.style("display", "none");
@@ -214,12 +230,12 @@ function createPieChart(data) {
         });
     }
 
-        // labels
+    // labels
     svg.selectAll('text')
         .data(data_ready)
         .enter()
         .append('text')
-        .text(d => `${d.data[0]} (${((d.data[1] / data.length) * 100).toFixed(1)}%)`)
+        .text(d => `${d.data[0]} (${((d.data[1].count / data.length) * 100).toFixed(1)}%)`)
         .attr("transform", d => `translate(${arcLabel.centroid(d)})`)
         .style("text-anchor", "middle")
         .style("font-size", 14);
