@@ -66,33 +66,6 @@ function createPartiteVisualization(data, containerId) {
         values: partitions.map(p => d[p.key])
     }));
 
-    // Draw nodes in each partition
-    partitionContainers.each(function(partition, partitionIndex) {
-        const container = d3.select(this);
-        const scale = partitionScales[partitionIndex];
-
-        container.selectAll(".node")
-            .data(nodes)
-            .enter()
-            .append("circle")
-            .attr("class", "node")
-            .attr("cx", partitionWidth / 2)
-            .attr("cy", d => scale(d.values[partitionIndex]))
-            .attr("r", 4)
-            .attr("fill", partition.color)
-            .attr("opacity", 0.8)
-            .on("mouseover", function() {
-                d3.select(this)
-                    .attr("r", 6)
-                    .attr("opacity", 1);
-            })
-            .on("mouseout", function() {
-                d3.select(this)
-                    .attr("r", 4)
-                    .attr("opacity", 0.8);
-            });
-    });
-
     // Add connecting lines between nodes
     const lines = svg.append("g")
         .attr("class", "lines")
@@ -111,5 +84,100 @@ function createPartiteVisualization(data, containerId) {
         .attr("fill", "none")
         .attr("stroke", "#999")
         .attr("stroke-width", 1)
-        .attr("opacity", 0.3);
+        .attr("opacity", 0.3)
+        .attr("class", "connection-line");
+
+    // Draw nodes in each partition
+    partitionContainers.each(function(partition, partitionIndex) {
+        const container = d3.select(this);
+        const scale = partitionScales[partitionIndex];
+
+        container.selectAll(".node")
+            .data(nodes)
+            .enter()
+            .append("circle")
+            .attr("class", "node")
+            .attr("cx", partitionWidth / 2)
+            .attr("cy", d => scale(d.values[partitionIndex]))
+            .attr("r", 4)
+            .attr("fill", partition.color)
+            .attr("opacity", 0.8)
+            .attr("data-id", d => d.id)
+            .on("mouseover", function(event, d) {
+                d3.select(this)
+                    .attr("r", 6)
+                    .attr("opacity", 1);
+            })
+            .on("mouseout", function(event, d) {
+                if (!d3.select(this).classed("selected")) {
+                    d3.select(this)
+                        .attr("r", 4)
+                        .attr("opacity", 0.8);
+                }
+            })
+            .on("click", function(event, d) {
+                // Remove selection from all nodes
+                d3.selectAll(".node")
+                    .attr("r", 4)
+                    .attr("opacity", 0.8)
+                    .classed("selected", false);
+
+                // Select the clicked node
+                d3.select(this)
+                    .attr("r", 6)
+                    .attr("opacity", 1)
+                    .classed("selected", true);
+
+                // Highlight the connection line for this node
+                d3.selectAll(".connection-line")
+                    .attr("opacity", 0.1)
+                    .classed("highlighted", false);
+
+                d3.select(this.parentNode.parentNode)
+                    .selectAll(".connection-line")
+                    .filter(line => line.id === d.id)
+                    .attr("opacity", 1)
+                    .attr("stroke", "#ff0000")
+                    .attr("stroke-width", 2)
+                    .classed("highlighted", true);
+
+                // Show tooltip with node information
+                const tooltip = d3.select("body")
+                    .append("div")
+                    .attr("class", "tooltip")
+                    .style("position", "absolute")
+                    .style("background", "white")
+                    .style("border", "1px solid black")
+                    .style("padding", "10px")
+                    .style("font-size", "12px")
+                    .style("pointer-events", "none")
+                    .style("z-index", "1000");
+
+                const tooltipHtml = partitions.map((p, i) => 
+                    `${p.name}: ${d.values[i]}`
+                ).join("<br>");
+
+                tooltip.html(tooltipHtml)
+                    .style("left", `${event.pageX + 10}px`)
+                    .style("top", `${event.pageY - 10}px`);
+            });
+    });
+
+    // Add click handler to remove selection when clicking outside
+    d3.select("body").on("click", function(event) {
+        if (!event.target.closest(".node")) {
+            d3.selectAll(".node")
+                .attr("r", 4)
+                .attr("opacity", 0.8)
+                .classed("selected", false);
+
+            d3.selectAll(".connection-line")
+                .attr("opacity", 0.3)
+                .attr("stroke", "#999")
+                .attr("stroke-width", 1)
+                .classed("highlighted", false);
+
+            d3.selectAll(".tooltip").remove();
+        }
+    });
 } 
