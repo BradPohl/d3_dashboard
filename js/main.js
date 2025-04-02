@@ -340,6 +340,10 @@ function showPartiteWindow(group) {
     // Load the data for the selected group members
     loadData(function(data) {
         const groupData = data.filter(d => group.members.includes(d.id));
+        if (groupData.length === 0) {
+            console.error("No data found for group members:", group.members);
+            return;
+        }
         createPartiteVisualization(groupData, "partiteVisualization");
     });
 }
@@ -371,15 +375,18 @@ function createGroup(selectedData) {
 
     if (!groupName) return;
 
+    // Handle both data objects and IDs
+    const memberIds = selectedData.map(d => typeof d === 'object' ? d.id : d);
+
     let group = {
         name: groupName,
-        members: selectedData.map(d => d.id)
+        members: memberIds
     };
 
     groups.push(group);
     localStorage.setItem("groups", JSON.stringify(groups));
 
-    alert(`Group "${groupName}" created with ${selectedData.length} members.`);
+    alert(`Group "${groupName}" created with ${memberIds.length} members.`);
     updateGroupsTable(); // Refresh table
 }
 
