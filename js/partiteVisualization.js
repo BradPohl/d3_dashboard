@@ -18,6 +18,7 @@ function createPartiteVisualization(data, containerId) {
 
     // Define partitions based on data attributes
     const partitions = [
+        { name: "ID", key: "id", color: "#17becf" },
         { name: "GPA", key: "gpa", color: "#1f77b4" },
         { name: "GRE/GMAT", key: "gre_gmat", color: "#ff7f0e" },
         { name: "Age", key: "age", color: "#2ca02c" },
@@ -107,41 +108,11 @@ function createPartiteVisualization(data, containerId) {
                 d3.select(this)
                     .attr("r", 6)
                     .attr("opacity", 1);
-            })
-            .on("mouseout", function(event, d) {
-                if (!d3.select(this).classed("selected")) {
-                    d3.select(this)
-                        .attr("r", 4)
-                        .attr("opacity", 0.8);
-                }
-            })
-            .on("click", function(event, d) {
-                // Remove selection from all nodes
-                d3.selectAll(".node")
-                    .attr("r", 4)
-                    .attr("opacity", 0.8)
-                    .classed("selected", false);
 
-                // Select the clicked node
-                d3.select(this)
-                    .attr("r", 6)
-                    .attr("opacity", 1)
-                    .classed("selected", true);
+                // Remove any existing tooltips
+                d3.selectAll(".tooltip").remove();
 
-                // Highlight the connection line for this node
-                d3.selectAll(".connection-line")
-                    .attr("opacity", 0.1)
-                    .classed("highlighted", false);
-
-                d3.select(this.parentNode.parentNode)
-                    .selectAll(".connection-line")
-                    .filter(line => line.id === d.id)
-                    .attr("opacity", 1)
-                    .attr("stroke", "#ff0000")
-                    .attr("stroke-width", 2)
-                    .classed("highlighted", true);
-
-                // Show tooltip with node information
+                // Create tooltip
                 const tooltip = d3.select("body")
                     .append("div")
                     .attr("class", "tooltip")
@@ -153,14 +124,83 @@ function createPartiteVisualization(data, containerId) {
                     .style("pointer-events", "none")
                     .style("z-index", "1000");
 
-                const tooltipHtml = partitions.map((p, i) => 
-                    `${p.name}: ${d.values[i]}`
-                ).join("<br>");
-
-                tooltip.html(tooltipHtml)
+                // Get the partition name and value for this node
+                const partition = d3.select(this.parentNode).datum();
+                const value = d.values[partitions.indexOf(partition)];
+                
+                // Format the tooltip content
+                const tooltipContent = `${partition.name}: ${value}`;
+                
+                tooltip.html(tooltipContent)
                     .style("left", `${event.pageX + 10}px`)
                     .style("top", `${event.pageY - 10}px`);
-            });
+            })
+            .on("mouseout", function(event, d) {
+                if (!d3.select(this).classed("selected")) {
+                    d3.select(this)
+                        .attr("r", 4)
+                        .attr("opacity", 0.8);
+                }
+                // Remove tooltip
+                d3.selectAll(".tooltip").remove();
+            })
+            .on("click", function(event, d) {
+                // Deselect all nodes
+                d3.selectAll(".node")
+                    .attr("r", 4)
+                    .attr("opacity", 0.8)
+                    .classed("selected", false);
+            
+                // Select the clicked node
+                d3.select(this)
+                    .attr("r", 6)
+                    .attr("opacity", 1)
+                    .classed("selected", true);
+            
+                // De-emphasize all lines
+                d3.selectAll(".connection-line")
+                    .attr("opacity", 0.1)
+                    .attr("stroke", "#999")
+                    .attr("stroke-width", 1)
+                    .classed("highlighted", false);
+            
+                // Get all lines associated with the clicked node and highlight them
+                const matchedLines = d3.selectAll(".connection-line")
+                    .filter(line => {
+                        // Get the partition index of the clicked node
+                        const clickedPartitionIndex = partitionIndex;
+                        
+                        // Get the value at the clicked partition for the current line
+                        const lineValueAtClickedPartition = line.values[clickedPartitionIndex];
+                        
+                        // Get the value at the clicked partition for the clicked node
+                        const clickedValue = d.values[clickedPartitionIndex];
+                        
+                        // Return true if the values match at the clicked partition
+                        return lineValueAtClickedPartition === clickedValue;
+                    });
+            
+                matchedLines
+                    .attr("opacity", 1)
+                    .attr("stroke", "#ff0000")
+                    .attr("stroke-width", 2)
+                    .classed("highlighted", true);
+
+                // Also highlight all nodes that are part of the highlighted paths
+                matchedLines.each(function(lineData) {
+                    partitions.forEach((partition, i) => {
+                        const value = lineData.values[i];
+                        d3.selectAll(".node")
+                            .filter(function(nodeData) {
+                                return nodeData.values[i] === value && 
+                                       d3.select(this.parentNode).datum() === partition;
+                            })
+                            .attr("r", 6)
+                            .attr("opacity", 1)
+                            .classed("selected", true);
+                    });
+                });
+            });            
     });
 
     // Add click handler to remove selection when clicking outside
