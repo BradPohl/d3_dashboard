@@ -318,6 +318,9 @@ function showGroupActions(group, index) {
     actionsContainer.querySelector(".delete-btn").addEventListener("click", () => {
         deleteGroup(index);
     });
+
+    showInsightCard(group);
+
 }
 
 function showPartiteWindow(group) {
@@ -409,3 +412,82 @@ function clearGroups() {
     updateGroupsTable(); // ✅ Refresh the table
 }
 
+function showInsightCard(group) {
+    const container = document.getElementById("insightCard-container");
+    container.style.display = "block";
+
+    loadData(function(fullData) {
+        const groupData = fullData.filter(d => group.members.includes(d.id));
+
+        const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+
+        const gpaAvg = avg(groupData.map(d => +d.gpa)).toFixed(2);
+        const greAvg = avg(groupData.map(d => +d.gre_gmat)).toFixed(0);
+
+        const topMajors = d3.rollups(groupData, v => v.length, d => d.major)
+            .sort((a, b) => d3.descending(a[1], b[1]))
+            .slice(0, 3)
+            .map(([major, count]) => `${major} (${count})`);
+
+        const commonLocation = d3.rollups(groupData, v => v.length, d => d.location)
+            .sort((a, b) => d3.descending(a[1], b[1]))[0][0];
+
+        const commonReason = d3.rollups(groupData, v => v.length, d => d.reason_for_mba)
+            .sort((a, b) => d3.descending(a[1], b[1]))[0][0];
+
+        const total = groupData.length;
+        const onlineCount = groupData.filter(d => d.location === "Online").length;
+        const onCampusCount = groupData.filter(d => d.location === "On-Campus").length;
+
+        const onlinePercent = ((onlineCount / total) * 100).toFixed(1);
+        const onCampusPercent = ((onCampusCount / total) * 100).toFixed(1);
+
+        const html = `
+            <h3>${group.name}</h3>
+            <p><strong>Average GPA:</strong> ${gpaAvg}</p>
+            <p><strong>Average GRE/GMAT:</strong> ${greAvg}</p>
+            <p><strong>Top Majors:</strong><br> ${topMajors.join("<br>")}</p>
+            <p><strong>Most Common Location:</strong> ${commonLocation}</p>
+            <p><strong>Most Common Reason:</strong> ${commonReason}</p>
+            <p><strong>Online:</strong> ${onlinePercent}% | <strong>On-Campus:</strong> ${onCampusPercent}%</p>
+        `;
+
+        document.getElementById("insightCard").innerHTML = html;
+
+        // Now add recommendations based on fullData
+        const fullGPAAvg = avg(fullData.map(d => +d.gpa));
+        const fullGREAvg = avg(fullData.map(d => +d.gre_gmat));
+
+        const gpaDiff = (gpaAvg - fullGPAAvg).toFixed(2);
+        const greDiff = (greAvg - fullGREAvg).toFixed(0);
+
+        let recs = [];
+
+        if (gpaDiff > 0.3) recs.push("This group has a notably higher GPA than average.");
+        if (gpaDiff < -0.3) recs.push("This group has a lower-than-average GPA. Explore how their decisions differ.");
+
+        if (greDiff > 15) recs.push("GRE scores are above average. Consider filtering by Reason for MBA.");
+        if (greDiff < -15) recs.push("Low GRE scores. Explore whether online vs on-campus preferences differ.");
+
+        if (new Set(groupData.map(d => d.major)).size > 3)
+            recs.push("This group includes a wide variety of majors. You could subgroup them by major.");
+
+        if (new Set(groupData.map(d => d.age)).size > 5)
+            recs.push("Age variation is high. Consider exploring trends by age bracket.");
+
+        const topReason = commonReason;
+        const similarProfiles = fullData.filter(d =>
+            !group.members.includes(d.id) &&
+            d.reason_for_mba === topReason
+        ).slice(0, 3).map(d => `ID: ${d.id}, Major: ${d.major}, GPA: ${d.gpa}`);
+
+        const recHtml = `
+            <h4>Recommendations</h4>
+            <ul>${recs.map(r => `<li>${r}</li>`).join("")}</ul>
+            <h5>Similar Profiles</h5>
+            <ul>${similarProfiles.map(p => `<li>${p}</li>`).join("")}</ul>
+        `;
+
+        document.getElementById("insightCard").innerHTML += recHtml;
+    });
+}
