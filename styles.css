@@ -105,6 +105,22 @@ td {
     background-color: #e3f2fd;
 }
 
+/* View Insight button */
+.view-insight-btn {
+    margin-left: 10px;
+    padding: 2px 8px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.view-insight-btn:hover {
+    background-color: #1976D2;
+}
+
 /* Group action buttons */
 .group-actions {
     display: none;
@@ -178,14 +194,57 @@ td {
 } 
 
 #insightCard-container {
-    top: 700px;
-    left: 1350px;
     width: 400px;
     height: 300px;
-    display: none;
     background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+#insightCard-container .drag-bar {
+    background: #333;
+    padding: 0;
+    border-bottom: 1px solid #ccc;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    height: 30px;
+    line-height: 30px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#insightCard-container .drag-bar span {
+    padding-left: 8px;
+}
+
+#insightCard-container .button {
+    background: transparent;
+    color: white;
+    border: none;
+    padding: 0 8px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+#insightCard-container .button:hover {
+    background: #f44336;
+}
+
+#insightCard {
+    width: 100%;
+    height: calc(100% - 30px);
     padding: 10px;
-    overflow-y: auto;
+    overflow: auto;
 }
 
 #insightCard h4, #insightCard h5 {

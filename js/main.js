@@ -261,11 +261,12 @@ function updateGroupsTable() {
         row.style.cursor = "pointer";
         
         row.insertCell(0).textContent = group.name;
-        row.insertCell(1).textContent = group.members.length + " members";
+        const membersCell = row.insertCell(1);
+        membersCell.innerHTML = `${group.members.length} members <button class="view-insight-btn">View Insight</button>`;
 
-        // Add click handler for row selection
+        // Add click handler for row selection (excluding the view insight button)
         row.addEventListener("click", function(e) {
-            // Don't trigger selection if clicking on action buttons
+            // Don't trigger selection if clicking on buttons
             if (e.target.tagName === "BUTTON") return;
             
             // Toggle selection
@@ -280,6 +281,12 @@ function updateGroupsTable() {
             } else {
                 hideGroupActions();
             }
+        });
+
+        // Add click handler for the View Insight button
+        membersCell.querySelector(".view-insight-btn").addEventListener("click", function(e) {
+            e.stopPropagation(); // Prevent row selection
+            showInsightCard(group);
         });
     });
 
@@ -318,9 +325,6 @@ function showGroupActions(group, index) {
     actionsContainer.querySelector(".delete-btn").addEventListener("click", () => {
         deleteGroup(index);
     });
-
-    showInsightCard(group);
-
 }
 
 function showPartiteWindow(group) {
@@ -415,6 +419,19 @@ function clearGroups() {
 function showInsightCard(group) {
     const container = document.getElementById("insightCard-container");
     container.style.display = "block";
+    
+    // Position the window in the center of the screen
+    container.style.left = `${(window.innerWidth - 400) / 2}px`;
+    container.style.top = `${(window.innerHeight - 300) / 2}px`;
+    
+    // Add close button functionality
+    const closeBtn = document.getElementById("closeInsightBtn");
+    closeBtn.onclick = () => {
+        container.style.display = "none";
+    };
+    
+    // Make the window draggable
+    draggable();
 
     loadData(function(fullData) {
         const groupData = fullData.filter(d => group.members.includes(d.id));

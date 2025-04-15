@@ -13,20 +13,20 @@
     <h1>MBA Decision Dashboard</h1>
     <div class="dashboard">
         <div class="draggable" id="scatter-container">
-            <div class="drag-bar">Undergrad GPA Vs. GRE/GMAT Score<button class="button"><i class="fas fa-save"></i></button></div>
+            <div class="drag-bar">Undergrad GPA Vs. GRE/GMAT Score</div>
             <div id="scatter"></div>
         </div>
         
         <div class="draggable" id="stackedBar-container">
-            <div class="drag-bar">Which Field takes more online or on-campus programs?<button class="button"><i class="fas fa-save"></i></button></div>
+            <div class="drag-bar">Which Field takes more online or on-campus programs?</div>
             <div id="stackedBar"></div>
         </div>
         <div class="draggable" id="lineGraph-container">
-            <div class="drag-bar">Does Age impact the decision to get an MBA?<button class="button"><i class="fas fa-save"></i></button></div>
+            <div class="drag-bar">Does Age impact the decision to get an MBA?</div>
             <div id="lineGraph"></div>
         </div>
         <div class="draggable" id="pieChart-container">
-            <div class="drag-bar">Reasons for getting an MBA<button class="button"><i class="fas fa-save"></i></button></div>
+            <div class="drag-bar">Reasons for getting an MBA</div>
             <div id="pieChart"></div>
         </div>
         <!-- <div class="draggable" id="saveTable-container">
@@ -50,11 +50,10 @@
             <div id="partiteVisualization"></div>
         </div>
 
-        <div id="insightCard-container" class="draggable">
-            <div class="drag-bar">Group Insights</div>
+        <div class="draggable" id="insightCard-container" style="display: none;">
+            <div class="drag-bar"><span>Group Insight</span><button class="button" id="closeInsightBtn"><i class="fas fa-times"></i></button></div>
             <div id="insightCard"></div>
         </div>
-        
     </div>
     <script src="js/dataloader.js"></script>
     <script src="js/chart1.js"></script>
