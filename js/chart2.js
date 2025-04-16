@@ -1,4 +1,3 @@
-
 //track selections
 let selectedSegments = [];
 
@@ -61,6 +60,7 @@ function createStackedBarChart(data) {
         .enter()
         .append("g")
         .attr("fill", d=>color(d.key))
+        .attr("class", d => d.key)
         .selectAll("rect")
         .data(d=>d)
         .enter()
@@ -70,6 +70,9 @@ function createStackedBarChart(data) {
         .attr("height", d=>yScale(d[0]) - yScale(d[1])) //height of bar
         .attr("width", xScale.bandwidth())
         .attr("class", "bar-segment")
+        .attr("data-type", function(d) {
+            return d3.select(this.parentNode).datum().key;
+        })
         .style("cursor", "pointer")
         .on("click", function(event, d) {
             const isSelected = selectedSegments.includes(d);
@@ -77,6 +80,7 @@ function createStackedBarChart(data) {
                 selectedSegments = selectedSegments.filter(seg => seg !== d);
                 d3.select(this).attr("stroke", null);
             } else {
+                d.segmentType = this.getAttribute("data-type");
                 selectedSegments.push(d);
                 d3.select(this).attr("stroke", "black").attr("stroke-width", 2);
             }
@@ -156,7 +160,6 @@ function showContextMenu(x, y) {
     .style("top", `${y}px`)
     .style("display", "block");
 
-    // ✅ Correctly extract the IDs from selected bars
     d3.select("#create-group").on("click", function() {
         menu.style("display", "none");
 
@@ -165,10 +168,17 @@ function showContextMenu(x, y) {
             return;
         }
 
-        // ✅ Extract IDs from selected segments
-        const selectedPeople = selectedSegments.flatMap(d => d.data.people.map(p => p.id));
+        // Filter people based on the selected segment type
+        const selectedPeople = selectedSegments.flatMap(d => {
+            const isOnline = d.segmentType === "online";
+            
+            // Filter people based on whether they're online or on-campus
+            return d.data.people.filter(p => {
+                const personLocation = p.location.toLowerCase();
+                return isOnline ? personLocation === "online" : personLocation === "on-campus";
+            }).map(p => p.id);
+        });
 
-        // ✅ Reuse the `createGroup` function from main.js
         createGroup(selectedPeople);
     });
 

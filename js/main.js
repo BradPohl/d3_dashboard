@@ -62,8 +62,13 @@ function draggable() {
 /**
  * Function to reset all charts and remove any filtering
  */
-function resetVisualizations(linkedCharts) {
+function resetVisualizations(linkedCharts = { scatter: true, stackedBar: true, lineGraph: true, pieChart: true }) {
     loadData(function(data) {
+        if (linkedCharts.scatter) {
+            d3.select("#scatter").selectAll("*").remove();
+            createScatterPlot(data);
+        }
+
         if (linkedCharts.stackedBar) {
             d3.select("#stackedBar").selectAll("*").remove();
             createStackedBarChart(data);

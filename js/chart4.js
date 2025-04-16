@@ -135,7 +135,7 @@ function createPieChart(data) {
 
     let selectedSlices = [];
     let isLinked = false; 
-    let linkedCharts = { scatter: true, stackedBar: true, lineGraph: true };
+    let linkedCharts = { scatter: true, stackedBar: true, lineGraph: true, pieChart: true };
 
     const slices = svg.selectAll('path')
         .data(data_ready)
@@ -184,6 +184,7 @@ function createPieChart(data) {
                 <label><input type="checkbox" id="scatter-check" ${linkedCharts.scatter ? "checked" : ""}> Scatter Plot</label><br>
                 <label><input type="checkbox" id="stackedBar-check" ${linkedCharts.stackedBar ? "checked" : ""}> Stacked Bar Chart</label><br>
                 <label><input type="checkbox" id="lineGraph-check" ${linkedCharts.lineGraph ? "checked" : ""}> Line Graph</label>
+                <label><input type="checkbox" id="pieChart-check" ${linkedCharts.pieChart ? "checked" : ""}> Pie Chart</label>
             </div>
         `;
 
@@ -199,6 +200,7 @@ function createPieChart(data) {
         d3.select("#scatter-check").on("change", function() { linkedCharts.scatter = this.checked; });
         d3.select("#stackedBar-check").on("change", function() { linkedCharts.stackedBar = this.checked; });
         d3.select("#lineGraph-check").on("change", function() { linkedCharts.lineGraph = this.checked; });
+        d3.select("#pieChart-check").on("change", function() { linkedCharts.pieChart = this.checked; });
 
         d3.select("#add-link").on("click", function() {
             menu.style("display", "none");
@@ -209,7 +211,7 @@ function createPieChart(data) {
         d3.select("#remove-link")?.on("click", function() {
             menu.style("display", "none");
             isLinked = false;
-            resetVisualizations();
+            resetVisualizations(linkedCharts);
         });
 
         d3.select("#create-group").on("click", function() {
