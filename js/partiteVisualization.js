@@ -26,18 +26,26 @@ function createPartiteVisualization(data, containerId) {
         { name: "Location", key: "location", color: "#9467bd" }
     ];
 
-    // Calculate scales for each partition
+    // Calculate scales for each partition with sorted domains
     const partitionScales = partitions.map(partition => {
         const values = data.map(d => d[partition.key]);
         if (typeof values[0] === 'number') {
-            return d3.scaleLinear()
-                .domain(d3.extent(values))
-                .range([0, innerHeight]);
+            // For numerical values, sort in descending order
+            const sortedValues = [...new Set(values)].sort((a, b) => b - a);
+            return d3.scalePoint()
+                .domain(sortedValues)
+                .range([0, innerHeight])
+                .padding(0.5);
         } else {
-            // For categorical data, create a scale band
-            const uniqueValues = [...new Set(values)];
+            // For categorical data, sort by frequency in descending order
+            const valueCounts = d3.rollups(
+                values,
+                v => v.length,
+                d => d
+            ).sort((a, b) => b[1] - a[1]);
+            const sortedCategories = valueCounts.map(d => d[0]);
             return d3.scaleBand()
-                .domain(uniqueValues)
+                .domain(sortedCategories)
                 .range([0, innerHeight])
                 .padding(0.2);
         }
